@@ -539,7 +539,7 @@ function startGame() {
   incorrectAnswers = 0;
   totalCorrectAnswers = 0;
   correctAnswersInLevel = 0;
-  lives = 1; // reiniciar vidas a 10
+  lives = 10; // reiniciar vidas a 10
 
     
   // revivir el robot al reiniciar
