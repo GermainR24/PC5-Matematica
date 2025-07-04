@@ -1,0 +1,468 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="{{ url_for('static', filename='libs/mindar/mindar-image-three.prod.js') }}"></script>
+    <script src="{{ url_for('static', filename='main_matematicas.js') }}" type="module"></script>
+    <style>
+      html, body {
+        position: relative; 
+        margin: 0; 
+        width: 100%; 
+        height: 100%; 
+        overflow: hidden;
+        background-image: url('{{ url_for("static", filename="fondoMatematica.jpg") }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+      
+      /* ocultar el video de la camara pero mantener el canvas de AR */
+      video {
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+      
+      /* asegurar que el canvas de AR sea visible y transparente */
+      canvas {
+        background: transparent !important;
+      }
+      
+      #math-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        font-family: 'Arial', sans-serif;
+        min-width: 200px;
+      }
+      
+      #math-problem {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      
+      #answer-input {
+        width: 100%;
+        padding: 8px;
+        font-size: 18px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      
+      #check-button {
+        width: 100%;
+        padding: 10px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 5px;
+      }
+      
+      #check-button:hover {
+        background: #45a049;
+      }
+      
+      #new-problem-button {
+        width: 100%;
+        padding: 10px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      
+      #new-problem-button:hover {
+        background: #1976D2;
+      }
+      
+      #result {
+        margin-top: 10px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+      }
+      
+      .correct {
+        color: #4CAF50;
+      }
+      
+      .incorrect {
+        color: #f44336;
+      }
+      
+      #score {
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+      }
+      
+      #level-progress {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        margin-top: 5px;
+        font-style: italic;
+      }
+      
+      #game-area {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 50;
+        pointer-events: none;
+      }
+      
+      .falling-number {
+        position: absolute;
+        font-size: 48px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        pointer-events: auto;
+        transition: transform 0.2s ease;
+        user-select: none;
+        z-index: 60;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+      }
+      
+      .falling-number:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.6);
+      }
+      
+      .falling-number.correct {
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+      }
+      
+      .falling-number.incorrect {
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+      }
+      
+      .flash-correct {
+        animation: flashGreen 0.5s ease-in-out;
+      }
+      
+      .flash-incorrect {
+        animation: flashRed 0.5s ease-in-out;
+      }
+      
+      @keyframes flashGreen {
+        0% { 
+          background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); 
+          transform: scale(1);
+        }
+        50% { 
+          background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); 
+          transform: scale(1.2);
+        }
+        100% { 
+          background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); 
+          transform: scale(1);
+        }
+      }
+      
+      @keyframes flashRed {
+        0% { 
+          background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); 
+          transform: scale(1);
+        }
+        50% { 
+          background: linear-gradient(135deg, #f44336 0%, #D32F2F 100%); 
+          transform: scale(1.2);
+        }
+        100% { 
+          background: linear-gradient(135deg, #f44336 0%, #D32F2F 100%); 
+          transform: scale(1);
+        }
+      }
+      
+      .explosion {
+        position: absolute;
+        pointer-events: none;
+        z-index: 70;
+      }
+      
+      .explosion-particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #FFD700;
+        border-radius: 50%;
+        animation: explode 0.8s ease-out forwards;
+      }
+      
+      @keyframes explode {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0);
+          opacity: 0;
+        }
+      }
+      
+      #instructions {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 80;
+        font-size: 18px;
+      }
+      
+      #start-game-button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+      
+      #start-game-button:hover {
+        background: #45a049;
+      }
+      
+      /* Estilos para animación de vida perdida */
+      #life-lost-animation {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 900;
+        pointer-events: none;
+        animation: lifeLostFadeIn 0.3s ease-out;
+      }
+      
+      .life-lost-content {
+        text-align: center;
+        background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(255, 68, 68, 0.4);
+        animation: lifeLostShake 0.5s ease-out;
+      }
+      
+      .life-lost-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      
+      .life-lost-remaining {
+        font-size: 16px;
+      }
+      
+      /* Estilos para pantalla de game over */
+      #game-over-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: gameOverFadeIn 0.5s ease-out;
+      }
+      
+      .game-over-content {
+        text-align: center;
+        color: white;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        border: 3px solid #e74c3c;
+      }
+      
+      .game-over-title {
+        font-size: 48px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #e74c3c;
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+      }
+      
+      .game-over-stats {
+        margin-bottom: 25px;
+        font-size: 18px;
+        line-height: 1.6;
+      }
+      
+      .game-over-stats div {
+        margin: 8px 0;
+      }
+      
+      #restart-button {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      
+      #restart-button:hover {
+        background: #2ecc71;
+      }
+      
+      .level-up-bonus {
+        font-size: 20px;
+        color: #e74c3c;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      
+      @keyframes lifeLostFadeIn {
+        0% { opacity: 0; transform: translate(-50%, -60%); }
+        100% { opacity: 1; transform: translate(-50%, -50%); }
+      }
+      
+      @keyframes lifeLostShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+      
+      @keyframes gameOverFadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      
+      /* Estilos para animación de subida de nivel */
+      #level-up-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: levelUpFadeIn 0.5s ease-out;
+      }
+      
+      .level-up-content {
+        text-align: center;
+        color: white;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        animation: levelUpBounce 0.6s ease-out;
+      }
+      
+      .level-up-title {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      
+      .level-up-number {
+        font-size: 48px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        margin-bottom: 10px;
+      }
+      
+      .level-up-subtitle {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 15px;
+        font-style: italic;
+      }
+      
+      .level-up-message {
+        font-size: 18px;
+        color: #555;
+      }
+      
+      @keyframes levelUpFadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      
+      @keyframes levelUpBounce {
+        0% { 
+          transform: scale(0.3);
+          opacity: 0;
+        }
+        50% { 
+          transform: scale(1.1);
+        }
+        100% { 
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-area"></div>
+    
+    <div id="instructions">
+      <div>¡Resuelve el problema matemático!</div>
+      <div>Apunta el carnet hacia la respuesta correcta que cae desde arriba</div>
+      <div style="font-size: 14px; margin-top: 10px; color: #ccc;">
+        Usa el carnet.mind para seleccionar la respuesta
+      </div>
+      <button id="start-game-button">Comenzar Juego</button>
+    </div>
+    
+    <div id="math-container">
+      <div id="math-problem">2 + 3 = ?</div>
+      <div id="result"></div>
+      <div id="score">Nivel 1 | Total: 0 | Vidas: 10</div>
+      <div id="level-progress">Progreso: 0/15 para siguiente nivel</div>
+      <button id="new-problem-button">Nuevo Problema</button>
+    </div>
+  </body>
+</html>

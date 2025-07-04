@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR Demo - Inicio</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 2px solid transparent;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .feature-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .feature-description {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .math-card { border-left: 4px solid #4CAF50; }
+        .ar-card { border-left: 4px solid #2196F3; }
+        .face-card { border-left: 4px solid #FF9800; }
+        .playground-card { border-left: 4px solid #9C27B0; }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 WebXR Demo</h1>
+        <p class="subtitle">Explora las diferentes experiencias de Realidad Aumentada</p>
+        
+        <div class="features-grid">
+            <a href="/matematicas" class="feature-card math-card">
+                <span class="feature-icon">🧮</span>
+                <div class="feature-title">Matemáticas AR</div>
+                <div class="feature-description">
+                    Resuelve problemas matemáticos con realidad aumentada. Los objetos 3D aparecen cuando respondes correctamente.
+                </div>
+            </a>
+            
+            <a href="/ar-imagenes" class="feature-card ar-card">
+                <span class="feature-icon">🎯</span>
+                <div class="feature-title">AR con Imágenes</div>
+                <div class="feature-description">
+                    Apunta tu cámara a targets específicos para ver modelos 3D superpuestos en la realidad.
+                </div>
+            </a>
+            
+            <a href="/rostros" class="feature-card face-card">
+                <span class="feature-icon">😎</span>
+                <div class="feature-title">Filtros Faciales</div>
+                <div class="feature-description">
+                    Prueba gafas, sombreros y accesorios virtuales con reconocimiento facial en tiempo real.
+                </div>
+            </a>
+            
+            <a href="/pg" class="feature-card playground-card">
+                <span class="feature-icon">🎮</span>
+                <div class="feature-title">WebXR Playground</div>
+                <div class="feature-description">
+                    Experimenta con WebXR básico. Crea cubos 3D en el espacio usando controles AR.
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
